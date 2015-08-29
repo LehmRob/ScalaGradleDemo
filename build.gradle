@@ -1,0 +1,46 @@
+apply plugin: 'scala'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.6
+version = '0.0.1-SNAPSHOT'
+group = 'org.lehmrob'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+def myMain = 'org.lehmrob.scalagradledemo.App'
+
+repositories { mavenCentral() }
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.11.1'
+}
+
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Implementation-Title': 'ScalaGradleDemo',
+        	'Implementation-Version': version,
+        	'Main-Class': myMain
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.5'
+}
+
+tasks.withType(ScalaCompile) {
+    configure(scalaCompileOptions.forkOptions) {
+        memoryMaximumSize = '1g'
+        jvmArgs = ['-XX:MaxPermSize=512m']
+    }
+}
